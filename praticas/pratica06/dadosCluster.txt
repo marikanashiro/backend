@@ -1,0 +1,9 @@
+cluster: 
+username = mkanashiro_db_user
+senha = zqMkdemMKe9bxrvW
+
+database user:
+username = marikanashiro
+senha = MARIalmeida1234
+
+mongodb+srv://marikanashiro:<db_password>@cluster0.nehg8uc.mongodb.net/
