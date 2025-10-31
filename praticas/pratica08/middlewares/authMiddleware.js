@@ -1,0 +1,31 @@
+const jwt = require('jsonwebtoken');
+
+const verificarToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ msg: 'Não autorizado' });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.usuario = decoded;
+        next();
+    } catch (err) {
+        return res.status(401).json({ msg: 'Token inválido' });
+    }
+};
+
+const gerarToken = (payload) => {
+    const expiresIn = 120;
+
+    try {
+        return jwt.sign({ email: payload }, process.env.JWT_SECRET, { expiresIn });
+    } catch (err) {
+        throw new Error('Erro ao gerar o token');
+    }
+};
+
+module.exports = { verificarToken, gerarToken };
