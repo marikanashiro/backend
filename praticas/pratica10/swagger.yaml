@@ -1,0 +1,163 @@
+openapi: 3.0.3
+info:
+  title: Prática 10 - API de Usuários com JWT
+  version: 1.0.0
+  description: API REST para cadastro, login, renovação de token e exclusão de usuários com autenticação JWT
+  contact: 
+    name: Mariana Kanashiro
+    email: m.kanashiro@iesb.edu.br
+
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /usuarios:
+    post:
+      tags:
+        - usuarios
+      summary: Cadastra um novo usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: usuario@email.com
+                senha:
+                  type: string
+                  format: password
+                  example: abcd1234
+              required:
+                - email
+                - senha
+      responses:
+        '201':
+          description: Usuário criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioResponse'
+        '422':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensagem'
+
+  /usuarios/login:
+    post:
+      tags:
+        - usuarios
+      summary: Realiza login e retorna token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usuario:
+                  type: string
+                  format: email
+                  example: usuario@email.com
+                senha:
+                  type: string
+                  format: password
+                  example: abcd1234
+              required:
+                - usuario
+                - senha
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensagem'
+  /usuarios/renovar:
+    post:
+      tags:
+        - usuarios
+      summary: Renova o token JWT
+      security:
+        - JWTAuth: []
+      responses:
+        '200':
+          description: Token renovado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '401':
+          description: Token inválido ou expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensagem'
+      
+  /usuarios/{id}:
+    delete:
+      tags: 
+        - usuarios
+      summary: Remove um usuário pelo ID
+      security:
+        - JWTAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID do usuário a ser removido
+      responses:
+        '204': 
+          description: Usuário removido com sucesso (No Content)
+        '401':
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensagem'
+
+components:
+  schemas:
+    UsuarioResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 673f9a1b2c8d1e2f3a4b5c6d
+        email:
+          type: string
+          format: email
+          example: usuario@email.com
+    Mensagem:
+      type: object
+      properties:
+        msg: 
+          type: string
+          example: Credenciais inválidas
+     
+  securitySchemes: 
+    JWTAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token JWT no formato `Bearer token` ou apenas `token`
